@@ -10,6 +10,7 @@ django = "*"
 python-decouple = "*"
 pyowm = "*"
 plotly = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.8"
