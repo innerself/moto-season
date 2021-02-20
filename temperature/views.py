@@ -31,7 +31,7 @@ def main(request):
         x=[forecast_temps.last().date] + [t.date for t in trend_temps],
         y=[forecast_temps.last().min] + [t.min for t in trend_temps],
         mode='lines',
-        name='Trend',
+        name='Forecast trend',
         opacity=0.8,
     )
 
@@ -39,7 +39,7 @@ def main(request):
         x=[t.date for t in all_temps],
         y=[season_start_temperature for _ in range(len(all_temps))],
         mode='lines',
-        name='Season start',
+        name='Minimal riding t\N{DEGREE SIGN}',
         opacity=0.6,
     )
 
