@@ -16,11 +16,39 @@ class Command(BaseCommand):
         one_call = mgr.one_call(lat=moscow.lat, lon=moscow.lon)
         daily_forecast = one_call.forecast_daily
 
-        for day in daily_forecast:
-            dt = datetime.datetime.utcfromtimestamp(day.reference_time()).date()
-            obj, created = Temperature.objects.update_or_create(
-                date=dt,
-                defaults={'min': day.temperature('celsius')['min']},
+        Temperature.objects.update_or_create(
+            date=self._format_date(daily_forecast[0].reference_time()),
+            defaults={
+                'min': daily_forecast[0].temperature('celsius')['min'],
+                'type': 'actual',
+            },
+        )
+
+        for day in daily_forecast[1:]:
+            Temperature.objects.update_or_create(
+                date=self._format_date(day.reference_time()),
+                defaults={
+                    'min': day.temperature('celsius')['min'],
+                    'type': 'forecast',
+                },
+            )
+
+        forecast_part = Temperature.objects.filter(type='forecast').order_by('date')
+
+        temp_diff = forecast_part.last().min - forecast_part.first().min
+        temp_trend = round(temp_diff / len(forecast_part), 2)
+
+        for x in range(1, len(forecast_part) + 1):
+            Temperature.objects.update_or_create(
+                date=forecast_part.last().date + datetime.timedelta(days=x),
+                defaults={
+                    'min': forecast_part.last().min + (temp_trend * x),
+                    'type': 'trend',
+                },
             )
 
         return None
+
+    @staticmethod
+    def _format_date(raw_date):
+        return datetime.datetime.utcfromtimestamp(raw_date).date()
